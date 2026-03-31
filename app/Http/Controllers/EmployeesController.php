@@ -97,27 +97,43 @@ class EmployeesController extends Controller
         ]);
     }
 
-    public function edit(StaffProfile $staffProfile)
+    public function edit(StaffProfile $employee)
     {
-        Gate::authorize('update', $staffProfile);
+        Gate::authorize('update', $employee);
+        $employee->load('user');
 
         return Inertia::render('employees/edit', [
-            'staffProfile' => $staffProfile->load('user'),
+            'employee' => array_merge($employee->toArray(), [
+                'date_of_birth' => $employee->date_of_birth?->format('Y-m-d'),
+                'hire_date' => $employee->hire_date?->format('Y-m-d'),
+                'user' => $employee->user
+            ]),
         ]);
     }
 
-    public function update(Request $request, StaffProfile $staffProfile)
+    public function update(Request $request, StaffProfile $employee)
     {
-        Gate::authorize('update', $staffProfile);
+        Gate::authorize('update', $employee);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             // Trap 1 Fixed: Ignore the current user's email
-            'email' => 'required|string|email|max:255|unique:users,email,' . $staffProfile->user_id,
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($employee->user_id)
+            ],
             // Trap 2 Fixed: Password is nullable on update
             'password' => 'nullable|string|min:8|confirmed',
             // Trap 1 Fixed: Ignore the current profile's staff_id_number
-            'staff_id_number' => 'required|string|max:50|unique:staff_profiles,staff_id_number,' . $staffProfile->id,
+            'staff_id_number' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('staff_profiles')->ignore($employee->id)
+            ],
             'date_of_birth' => 'required|date',
             'hire_date' => 'required|date',
             'phone_number' => 'nullable|string|max:20',
@@ -125,7 +141,7 @@ class EmployeesController extends Controller
             'hourly_rate' => 'required|numeric|min:0',
         ]);
 
-        DB::transaction(function () use ($validated, $staffProfile) {
+        DB::transaction(function () use ($validated, $employee) {
 
             // 1. Prepare User Data
             $userData = [
@@ -139,10 +155,10 @@ class EmployeesController extends Controller
             }
 
             // Update the attached User model
-            $staffProfile->user->update($userData);
+            $employee->user->update($userData);
 
             // 2. Update the Staff Profile model
-            $staffProfile->update([
+            $employee->update([
                 'staff_id_number' => $validated['staff_id_number'],
                 'date_of_birth' => $validated['date_of_birth'],
                 'hire_date' => $validated['hire_date'],
