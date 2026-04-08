@@ -18,7 +18,7 @@ export default function Create() {
         name: '',
         price: '',
         category: '',
-        image: null as File | null,
+        image_url: null as File | null,
         description: '',
         sold_out: false,
     });
@@ -104,9 +104,9 @@ export default function Create() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="image">Item Image</Label>
-                                <Input onChange={(e) => setData('image', e.target.files?.[0] || null)} type="file" id="image" className="cursor-pointer" />
-                                {errors.image && <p className="text-xs text-red-500 font-medium">{errors.image}</p>}
+                                <Label htmlFor="image_url">Item Image</Label>
+                                <Input onChange={(e) => setData('image_url', e.target.files?.[0] || null)} type="file" id="image_url" className="cursor-pointer" />
+                                {errors.image_url && <p className="text-xs text-red-500 font-medium">{errors.image_url}</p>}
                             </div>
                         </div>
 

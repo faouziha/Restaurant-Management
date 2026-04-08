@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Menu;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class MenuController extends Controller
@@ -38,11 +40,11 @@ class MenuController extends Controller
             'category' => 'required|string',
             'description' => 'required|string',
             'sold_out' => 'boolean',
-            'image' => 'required|image|mimes:jpg,jpeg,png|max:2048', // Max 2MB
+            'image_url' => 'required|image|mimes:jpg,jpeg,png|max:2048', // Max 2MB
         ]);
 
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('menus', 'public');
+        if ($request->hasFile('image_url')) {
+            $path = $request->file('image_url')->store('menus', 'public');
             $validated['image_url'] = $path;
         }
 
@@ -54,9 +56,12 @@ class MenuController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Menu $menu)   
     {
-        //
+        Gate::authorize('view', $menu);
+        return Inertia::render('menu/show', [
+            'menu' => $menu
+        ]);
     }
 
     /**
@@ -78,8 +83,15 @@ class MenuController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Menu $menu)
     {
-        //
+        Gate::authorize('delete', $menu);
+        if ($menu->image_url) {
+            Storage::disk('public')->delete($menu->image_url);
+        }
+
+        $menu->delete();
+        return redirect()->route('menu.index')
+        ->with('success', 'Item deleted successfully.');
     }
 }

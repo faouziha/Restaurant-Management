@@ -173,7 +173,7 @@ class EmployeesController extends Controller
 
     public function destroy(StaffProfile $employee)
     {
-        Gate::authorize('update', $employee);
+        Gate::authorize('delete', $employee);
 
         optional($employee->user)->delete();
         $employee->delete();
