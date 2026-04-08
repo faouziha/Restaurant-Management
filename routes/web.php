@@ -20,19 +20,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('employees', EmployeesController::class);
 
     //Menu Routes
-    Route::get('menu', [MenuController::class, 'index'])->name('menu.index');
+    Route::resource('menu', MenuController::class);
 
     //Tables Routes
-    Route::get('tables', [TablesController::class, 'index'])->name('tables.index');
+    Route::resource('tables', TablesController::class);
 
     //Orders Routes
-    Route::get('orders', [OrdersController::class, 'index'])->name('orders.index');
+    Route::resource('orders', OrdersController::class);
 
     //Stock Routes
-    Route::get('stock', [StockController::class, 'index'])->name('stock.index');
+    Route::resource('stock', StockController::class);
 
     //Sales Routes
-    Route::get('sales', [SalesController::class, 'index'])->name('sales.index');
+    Route::resource('sales', SalesController::class);
 });
 
 require __DIR__ . '/settings.php';
