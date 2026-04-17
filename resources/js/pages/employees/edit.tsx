@@ -16,23 +16,23 @@ interface Employee {
     }
     hire_date: string;
     hourly_rate: string | number;
-    date_of_birth?: string;
+    date_of_birth: string;
     phone_number: string;
     emergency_contact: string;
 }
-
 interface Props {
     employee: Employee;
 }
 
 export default function Edit({ employee }: Props) {
     const [isSuccess, setIsSuccess] = useState(false);
+    const [timerId, setTimerId] = useState<ReturnType<typeof setTimeout> | null>(null);
     
     if (!employee) return <div>Loading...</div>;
 
     const { data, setData, put, processing, errors } = useForm({
-        name: employee.user.name,
-        email: employee.user.email,
+        name: employee.user.name || '',
+        email: employee.user.email || '',
         password: '',
         password_confirmation: '',
         type: employee.user.type || 'staff',
@@ -49,18 +49,26 @@ export default function Edit({ employee }: Props) {
         { title: employee.user.name, href: `/employees/${employee.id}` },
     ];
 
-    const submit: FormEventHandler = (e) => {
+    const submit: FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
         put('/employees/' + employee.id, {
             preserveScroll: true,
             onSuccess: () => {
                 setIsSuccess(true);
-                setTimeout(() => {
-                    router.visit('/employees'); 
+                const id = setTimeout(() => {
+                    router.visit('/employees');
                 }, 3000);
+                setTimerId(id); // Store the ID
             },
         });
+    };
+
+    const handleManualReturn = () => {
+        if (timerId) {
+            clearTimeout(timerId); // Stop the 3s timer
+        }
+        router.visit('/employees');
     };
 
     // Render Success State
@@ -76,8 +84,8 @@ export default function Edit({ employee }: Props) {
                     <p className="text-muted-foreground">
                         {data.name}'s account and HR profile have been updated.
                     </p>
-                    <Button asChild className="mt-6 w-fit">
-                        <Link href="/employees">Return to Employee Directory</Link>
+                    <Button onClick={handleManualReturn} className="mt-6 w-fit">
+                        Return to Employee Directory
                     </Button>
                 </div>
             </AppLayout>

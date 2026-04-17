@@ -2,7 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { Edit2, UserPlus, Eye, Trash2 } from 'lucide-react';
+import { Edit2, UtensilsCrossed, Eye, Trash2 } from 'lucide-react';
 
 
 interface MenuItem {
@@ -40,7 +40,7 @@ export default function index({ menuItems }: Props) {
                     </div>
                     <Button asChild>
                         <Link href="/menu/create">
-                            <UserPlus className="mr-2 h-4 w-4" />
+                            <UtensilsCrossed className="mr-2 h-4 w-4" />
                             Add Menu Item
                         </Link>
                     </Button>

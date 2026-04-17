@@ -36,13 +36,16 @@ class MenuController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric',
+            'price' => 'required|numeric|min:0',
             'category' => 'required|string',
             'description' => 'required|string',
             'sold_out' => 'boolean',
             'image_url' => 'required|image|mimes:jpg,jpeg,png|max:2048', // Max 2MB
         ]);
 
+        $validated['sold_out'] = $request->boolean('sold_out');
+
+        // Handle the image upload
         if ($request->hasFile('image_url')) {
             $path = $request->file('image_url')->store('menus', 'public');
             $validated['image_url'] = $path;
@@ -50,13 +53,13 @@ class MenuController extends Controller
 
         Menu::create($validated);
 
-        return redirect()->back();
+        return redirect()->route('menu.index')->with('success', 'Item created!');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Menu $menu)   
+    public function show(Menu $menu)
     {
         Gate::authorize('view', $menu);
         return Inertia::render('menu/show', [
@@ -67,17 +70,54 @@ class MenuController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Menu $menu)
     {
-        //
+        Gate::authorize('update', $menu);
+        return Inertia::render('menu/edit', [
+            'menu' => $menu
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Menu $menu)
     {
-        //
+        // 1. Authorize the action
+        Gate::authorize('update', $menu);
+
+        // 2. Validate the data
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'category' => 'required|string',
+            'description' => 'required|string',
+            'sold_out' => 'boolean',
+            // image is nullable here because they might not want to change it
+            'image_url' => $request->hasFile('image_url') ? 'image|mimes:jpg,jpeg,png|max:2048' : 'nullable',
+        ]);
+
+        $validated['sold_out'] = $request->boolean('sold_out');
+
+        // 3. Handle the image logic
+        if ($request->hasFile('image_url')) {
+            // Delete the old image if it exists
+            if ($menu->image_url) {
+                Storage::disk('public')->delete($menu->image_url);
+            }
+
+            // Store the new image
+            $path = $request->file('image_url')->store('menus', 'public');
+            $validated['image_url'] = $path;
+        } else {
+            // If no new image is uploaded, keep the old one
+            unset($validated['image_url']);
+        }
+
+        // 4. Update the record
+        $menu->update($validated);
+
+        return redirect()->back()->with('success', 'Menu updated successfully!');
     }
 
     /**
@@ -86,12 +126,14 @@ class MenuController extends Controller
     public function destroy(Menu $menu)
     {
         Gate::authorize('delete', $menu);
-        if ($menu->image_url) {
-            Storage::disk('public')->delete($menu->image_url);
-        }
+        $imagePath = $menu->image_url;
 
         $menu->delete();
+
+        if ($imagePath) {
+            Storage::disk('public')->delete($imagePath);
+        }
         return redirect()->route('menu.index')
-        ->with('success', 'Item deleted successfully.');
+            ->with('success', 'Item deleted successfully.');
     }
 }
