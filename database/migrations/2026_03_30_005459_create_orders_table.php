@@ -17,10 +17,10 @@ return new class extends Migration
     {
         Schema::create("orders", function (Blueprint $table) {
             $table->id();
-            $table->foreignId(User::class)->constrained()->nullOnDelete();
+            $table->foreignIdFor(User::class)->constrained()->nullOnDelete();
             $table->foreignId("waiter_id")->constrained("users")->nullOnDelete();
             $table->string("type")->default(OrderType::DINE_IN->value);
-            $table->foreignId(Table::class)->nullable()->constrained();
+            $table->foreignIdFor(Table::class)->nullable()->constrained();
             $table->string("status")->default(OrderStatus::PENDING->value);
             $table->decimal("total_price",8,2)->default(0);
             $table->timestamp('read_at')->nullable();

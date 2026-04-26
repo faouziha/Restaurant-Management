@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Gate;
 use App\Models\User;
+use App\UserType;
 
 class TablesController extends Controller
 {
@@ -28,7 +29,7 @@ class TablesController extends Controller
      */
     public function create()
     {
-        $waiters = User::where('type', \App\UserType::STAFF)->get(['id', 'name']);
+        $waiters = User::where('type', UserType::STAFF)->get(['id', 'name']);
         
         return Inertia::render('tables/create', [
             'waiters' => $waiters

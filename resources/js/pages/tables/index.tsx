@@ -252,20 +252,20 @@ export default function index({ tables }: Props) {
                                     </Card>
                                 </div>
                             </div>
-                            <Card className='p-4'>
-                                <h3 className="font-semibold mb-4 text-lg">All Tables</h3>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left text-sm">
-                                        <thead className="bg-muted/50 border-b border-sidebar-border/70 text-muted-foreground font-medium">
+                            <div className="mt-2">
+                                <h3 className="font-semibold mb-4 text-lg px-1">All Tables</h3>
+                                <div className="rounded-xl border border-sidebar-border/70 bg-card overflow-x-auto">
+                                    <table className="w-full text-left text-sm min-w-[800px]">
+                                        <thead className="bg-muted/50 border-b border-sidebar-border/70 text-muted-foreground font-medium whitespace-nowrap">
                                             <tr>
                                                 <th className="p-4">Table Id</th>
                                                 <th className="p-4">Table Number</th>
                                                 <th className="p-4">Waiter Id</th>
                                                 <th className="p-4">Status</th>
-                                                <th className="p-4">Actions</th>
+                                                <th className="p-4 text-right">Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody className="divide-y divide-sidebar-border/70">
                                             {tables.length > 0 ? (
                                                 tables.map((table) => (
                                                     <tr key={table.id} className="hover:bg-muted/30 transition-colors">
@@ -300,7 +300,7 @@ export default function index({ tables }: Props) {
                                         </tbody>
                                     </table>
                                 </div>
-                            </Card>
+                            </div>
                         </div>
                     )}
                 </main>
