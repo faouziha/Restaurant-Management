@@ -14,7 +14,9 @@ class Table extends Model
     protected $fillable = [
         'number',
         'waiter_id',
-        'status'
+        'status',
+        'position_x',
+        'position_y'
     ];
 
     protected function casts(): array

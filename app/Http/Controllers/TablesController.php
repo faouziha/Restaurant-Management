@@ -84,12 +84,19 @@ class TablesController extends Controller
         Gate::authorize('update', $table);
         
         $validated = $request->validate([
-            'number' => ['required', 'integer', 'min:1', Rule::unique('tables')->ignore($table->id)],
+            'number' => ['sometimes', 'required', 'integer', 'min:1', Rule::unique('tables')->ignore($table->id)],
             'waiter_id' => ['nullable', 'exists:users,id'],
-            'status' => ['required', Rule::enum(\App\TableStatus::class)],
+            'status' => ['sometimes', 'required', Rule::enum(\App\TableStatus::class)],
+            'position_x' => ['nullable', 'integer'],
+            'position_y' => ['nullable', 'integer'],
         ]);
 
         $table->update($validated);
+        
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Table position updated']);
+        }
+        
         return redirect('/tables')->with('success', 'Table updated!');
     }
 
