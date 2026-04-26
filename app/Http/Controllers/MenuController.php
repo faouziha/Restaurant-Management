@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\MenuCategories;
 use App\Models\Menu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class MenuController extends Controller
@@ -37,7 +39,7 @@ class MenuController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
-            'category' => 'required|string',
+            'category' => ['required','string', Rule::enum(MenuCategories::class)],
             'description' => 'required|string',
             'sold_out' => 'boolean',
             'image_url' => 'required|image|mimes:jpg,jpeg,png|max:2048', // Max 2MB
@@ -53,7 +55,7 @@ class MenuController extends Controller
 
         Menu::create($validated);
 
-        return redirect()->route('menu.index')->with('success', 'Item created!');
+        return redirect()->back()->with('success', 'Item created!');
     }
 
     /**

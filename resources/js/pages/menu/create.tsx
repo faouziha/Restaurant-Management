@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import { Label } from '@/components/ui/label';
@@ -22,14 +22,28 @@ export default function Create() {
         description: '',
         sold_out: false,
     });
+    const [timerId, setTimerId] = useState<ReturnType<typeof setTimeout> | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/menu', {
             forceFormData: true,
-            onSuccess: () => setIsSuccess(true),
+            onSuccess: () => {
+                setIsSuccess(true);
+                const id = setTimeout(() => {
+                    router.visit('/menu');
+                }, 3000);
+                setTimerId(id);
+            }
         });
     }
+
+    const handleManualReturn = () => {
+        if (timerId) {
+            clearTimeout(timerId); // Stop the 3s timer
+        }
+        router.visit('/menu');
+    };
 
     if (isSuccess) {
         return (
@@ -38,13 +52,14 @@ export default function Create() {
                 <div className="flex flex-col items-center justify-center flex-1 h-full gap-6 mt-20 md:mt-32">
                     <CheckCircle className="w-32 h-32 text-green-500 animate-in zoom-in duration-500" />
                     <h1 className="text-3xl font-bold tracking-tight text-center">
-                        Menu Item Created Successfully!
+                        Menu Item Added Successfully!
                     </h1>
                     <p className="text-muted-foreground">
-                        {data.name} has been added to the menu.
+                        {data.name} has been Added. Redirecting in 3 seconds...
                     </p>
-                    <Button asChild className="mt-6 w-fit">
-                        <Link href="/menu">Return to Menu Directory</Link>
+                    {/* Manual Return Button */}
+                    <Button onClick={handleManualReturn} className="mt-6 w-fit">
+                        Return to Menu List Now
                     </Button>
                 </div>
             </AppLayout>

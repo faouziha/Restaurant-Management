@@ -1,5 +1,5 @@
 import { useState, type FormEventHandler } from 'react';
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,14 +28,28 @@ export default function Create() {
         emergency_contact: '',
         hourly_rate: '',
     });
+    const [timerId, setTimerId] = useState<ReturnType<typeof setTimeout> | null>(null);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         
         post('/employees', {
             preserveScroll: true, 
-            onSuccess: () => setIsSuccess(true),
+            onSuccess: () => {
+                setIsSuccess(true);
+                const id = setTimeout(() => {
+                    router.visit('/employees');
+                }, 3000);
+                setTimerId(id);
+            }
         });
+    };
+
+    const handleManualReturn = () => {
+        if (timerId) {
+            clearTimeout(timerId); // Stop the 3s timer
+        }
+        router.visit('/employees');
     };
 
     if (isSuccess) {
@@ -50,8 +64,8 @@ export default function Create() {
                     <p className="text-muted-foreground">
                         {data.name}'s account and HR profile have been created.
                     </p>
-                    <Button asChild className="mt-6 w-fit">
-                        <Link href="/employees">Return to Employee Directory</Link>
+                    <Button onClick={handleManualReturn} className="mt-6 w-fit">
+                        Return to Employee Directory
                     </Button>
                 </div>
             </AppLayout>

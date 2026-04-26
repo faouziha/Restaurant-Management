@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Table;
+use App\TableStatus;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Gate;
+use App\Models\User;
 
 class TablesController extends Controller
 {
@@ -12,7 +17,10 @@ class TablesController extends Controller
      */
     public function index()
     {
-        return Inertia::render("tables/index");
+        $table = Table::all();
+        return Inertia::render("tables/index", [
+            'tables' => $table
+        ]);
     }
 
     /**
@@ -20,7 +28,11 @@ class TablesController extends Controller
      */
     public function create()
     {
-        //
+        $waiters = User::where('type', \App\UserType::STAFF)->get(['id', 'name']);
+        
+        return Inertia::render('tables/create', [
+            'waiters' => $waiters
+        ]);
     }
 
     /**
@@ -28,38 +40,66 @@ class TablesController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'number' => 'required|integer|min:1|unique:tables',
+            'waiter_id' => 'nullable|exists:users,id',
+            'status' => ['required', Rule::enum(TableStatus::class)],
+        ]);
+
+        Table::create($validated);
+        return redirect()->back()->with('success', 'Table created!');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Table $table)
     {
-        //
+        Gate::authorize('view', $table);
+        return Inertia::render('tables/show', [
+            'table' => $table
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Table $table)
     {
-        //
+        Gate::authorize('update', $table);
+        
+        $waiters = User::where('type', \App\UserType::STAFF)->get(['id', 'name']);
+        
+        return Inertia::render('tables/edit', [
+            'table' => $table,
+            'waiters' => $waiters
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Table $table)
     {
-        //
+        Gate::authorize('update', $table);
+        
+        $validated = $request->validate([
+            'number' => ['required', 'integer', 'min:1', Rule::unique('tables')->ignore($table->id)],
+            'waiter_id' => ['nullable', 'exists:users,id'],
+            'status' => ['required', Rule::enum(\App\TableStatus::class)],
+        ]);
+
+        $table->update($validated);
+        return redirect('/tables')->with('success', 'Table updated!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Table $table)
     {
-        //
+        Gate::authorize('delete', $table);
+        $table->delete();
+        return redirect('/tables')->with('success', 'Table deleted!');
     }
 }
